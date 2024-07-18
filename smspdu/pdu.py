@@ -298,6 +298,7 @@ class SMS_GENERIC(object):
                 raise ValueError('UCS-2 message too long (%d>140 chars)' %
                     length)
             tp_udl = len(user_data) + len(tp_ud)
+            user_data = user_data.decode('utf_16_be', 'replace')
 
         else:
             # 8-bit data
@@ -560,7 +561,10 @@ class SMS_DELIVER(SMS_GENERIC):
             tpdu.append('\x1b[47;30m')     # black
             tpdu.append(''.join(['%02X' % ord(c) for c in tp_ud]))
         else:
-            tpdu.append(''.join(['%02X' % ord(c) for c in self.tp_ud]))
+            if self.tp_dcs == 8:
+                tpdu.append(''.join(['%04X' % ord(c) for c in self.tp_ud]))
+            else:
+                tpdu.append(''.join(['%02X' % ord(c) for c in self.tp_ud]))
 
         if coloured:
             tpdu.append('\x1b[01;0m')
